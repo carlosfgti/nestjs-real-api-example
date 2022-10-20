@@ -7,7 +7,7 @@ export class EvaluationController {
   constructor(private evaluationService: EvaluationService) {}
 
   @Get('/')
-  findAll(): EvaluationEntity[] {
-    return this.evaluationService.findAll();
+  async findAll(): Promise<EvaluationEntity[]> {
+    return await this.evaluationService.findAll();
   }
 }
