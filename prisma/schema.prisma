@@ -1,0 +1,478 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model accesses {
+  id       Int      @id @default(autoincrement()) @db.UnsignedInt
+  user_id  Int      @db.UnsignedInt
+  datetime DateTime @db.DateTime(0)
+  users    users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "accesses_user_id_foreign")
+
+  @@index([user_id], map: "accesses_user_id_foreign")
+}
+
+model calendars {
+  id          Int      @id @default(autoincrement()) @db.UnsignedInt
+  date_start  DateTime @db.Date
+  date_finish DateTime @db.Date
+  label       String?
+}
+
+model categories {
+  id              Int               @id @default(autoincrement()) @db.UnsignedInt
+  name            String            @unique(map: "categories_name_unique") @db.VarChar(100)
+  url             String            @unique(map: "categories_url_unique") @db.VarChar(100)
+  description     String            @db.Text
+  color           String
+  video           String?           @db.VarChar(200)
+  image           String?           @db.VarChar(200)
+  img_social      String?           @db.VarChar(200)
+  deleted_at      DateTime?         @db.Timestamp(0)
+  created_at      DateTime?         @db.Timestamp(0)
+  updated_at      DateTime?         @db.Timestamp(0)
+  category_course category_course[]
+  courses         courses[]
+}
+
+model category_course {
+  id          Int        @id @default(autoincrement()) @db.UnsignedInt
+  category_id Int        @db.UnsignedInt
+  course_id   Int        @db.UnsignedInt
+  categories  categories @relation(fields: [category_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "category_course_category_id_foreign")
+  courses     courses    @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "category_course_course_id_foreign")
+
+  @@index([category_id], map: "category_course_category_id_foreign")
+  @@index([course_id], map: "category_course_course_id_foreign")
+}
+
+model certificates {
+  id            Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id       Int       @db.UnsignedInt
+  course_id     Int       @db.UnsignedInt
+  identify      String    @unique(map: "certificates_identify_unique")
+  date_started  DateTime  @db.Date
+  date_finished DateTime  @db.Date
+  available     Boolean   @default(true)
+  deleted_at    DateTime? @db.Timestamp(0)
+  created_at    DateTime? @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+  courses       courses   @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "certificates_course_id_foreign")
+  users         users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "certificates_user_id_foreign")
+
+  @@index([course_id], map: "certificates_course_id_foreign")
+  @@index([user_id], map: "certificates_user_id_foreign")
+}
+
+model course_evaluation {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  user_id   Int      @db.UnsignedInt
+  course_id Int      @db.UnsignedInt
+  stars     Int
+  date      DateTime @db.Date
+  testimony String?  @db.Text
+  visible   Boolean  @default(true)
+  courses   courses  @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "course_evaluation_course_id_foreign")
+  users     users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "course_evaluation_user_id_foreign")
+
+  @@index([course_id], map: "course_evaluation_course_id_foreign")
+  @@index([user_id], map: "course_evaluation_user_id_foreign")
+}
+
+model course_requisite {
+  id                                                    Int     @id @default(autoincrement()) @db.UnsignedInt
+  course_id                                             Int     @db.UnsignedInt
+  requisite_course_id                                   Int     @db.UnsignedInt
+  courses_course_requisite_course_idTocourses           courses @relation("course_requisite_course_idTocourses", fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "course_requisite_course_id_foreign")
+  courses_course_requisite_requisite_course_idTocourses courses @relation("course_requisite_requisite_course_idTocourses", fields: [requisite_course_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "course_requisite_requisite_course_id_foreign")
+
+  @@index([course_id], map: "course_requisite_course_id_foreign")
+  @@index([requisite_course_id], map: "course_requisite_requisite_course_id_foreign")
+}
+
+model courses {
+  id                                                             Int                     @id @default(autoincrement()) @db.UnsignedInt
+  user_id                                                        Int                     @db.UnsignedInt
+  category_id                                                    Int                     @db.UnsignedInt
+  name                                                           String                  @unique(map: "courses_name_unique") @db.VarChar(100)
+  url                                                            String                  @unique(map: "courses_url_unique") @db.VarChar(100)
+  description                                                    String                  @db.Text
+  date                                                           DateTime                @db.Date
+  certificate_time                                               DateTime                @db.Time(0)
+  color                                                          String
+  origin                                                         courses_origin          @default(vimeo)
+  video                                                          String?                 @db.VarChar(200)
+  image                                                          String?                 @db.VarChar(200)
+  img_social                                                     String?                 @db.VarChar(200)
+  level                                                          courses_level           @default(beginner)
+  status                                                         courses_status          @default(progressing)
+  free                                                           Boolean                 @default(false)
+  single_sale                                                    Boolean                 @default(false)
+  identify_gateway                                               Int?
+  price                                                          Float?
+  old_price                                                      Float?
+  total_plots                                                    Int?
+  plot_price                                                     Float?
+  sale_link                                                      String?
+  discount_sales_link                                            String?
+  is_promotional                                                 Boolean                 @default(false)
+  deleted_at                                                     DateTime?               @db.Timestamp(0)
+  created_at                                                     DateTime?               @db.Timestamp(0)
+  updated_at                                                     DateTime?               @db.Timestamp(0)
+  categories                                                     categories              @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "courses_category_id_foreign")
+  users                                                          users                   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "courses_user_id_foreign")
+  category_course                                                category_course[]
+  certificates                                                   certificates[]
+  course_evaluation                                              course_evaluation[]
+  course_requisite_course_requisite_course_idTocourses           course_requisite[]      @relation("course_requisite_course_idTocourses")
+  course_requisite_course_requisite_requisite_course_idTocourses course_requisite[]      @relation("course_requisite_requisite_course_idTocourses")
+  enrollment                                                     enrollment[]
+  modules                                                        modules[]
+  specialization_course                                          specialization_course[]
+
+  @@index([category_id], map: "courses_category_id_foreign")
+  @@index([user_id], map: "courses_user_id_foreign")
+}
+
+model enrollment {
+  id            Int               @id @default(autoincrement()) @db.UnsignedInt
+  user_id       Int               @db.UnsignedInt
+  course_id     Int               @db.UnsignedInt
+  transaction   String
+  purchase_date DateTime          @db.Date
+  status        enrollment_status
+  created_at    DateTime?         @db.Timestamp(0)
+  updated_at    DateTime?         @db.Timestamp(0)
+  courses       courses           @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "enrollment_course_id_foreign")
+  users         users             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "enrollment_user_id_foreign")
+
+  @@index([course_id], map: "enrollment_course_id_foreign")
+  @@index([user_id], map: "enrollment_user_id_foreign")
+}
+
+model lessons {
+  id          Int            @id @default(autoincrement()) @db.UnsignedInt
+  module_id   Int            @db.UnsignedInt
+  name        String         @unique(map: "lessons_name_unique") @db.VarChar(100)
+  url         String         @unique(map: "lessons_url_unique") @db.VarChar(100)
+  video       String         @db.VarChar(200)
+  published   Boolean        @default(true)
+  description String?        @db.Text
+  date        DateTime?      @db.Date
+  duration    String?        @db.VarChar(8)
+  origin      lessons_origin @default(vimeo)
+  free        Boolean        @default(false)
+  deleted_at  DateTime?      @db.Timestamp(0)
+  created_at  DateTime?      @db.Timestamp(0)
+  updated_at  DateTime?      @db.Timestamp(0)
+  modules     modules        @relation(fields: [module_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "lessons_module_id_foreign")
+  views       views[]
+
+  @@index([module_id], map: "lessons_module_id_foreign")
+}
+
+model migrations {
+  id        Int    @id @default(autoincrement()) @db.UnsignedInt
+  migration String
+  batch     Int
+}
+
+model modules {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  name        String    @unique(map: "modules_name_unique") @db.VarChar(100)
+  course_id   Int       @db.UnsignedInt
+  description String?   @db.Text
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+  courses     courses   @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "modules_course_id_foreign")
+  lessons     lessons[]
+
+  @@index([course_id], map: "modules_course_id_foreign")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model password_resets {
+  email      String    @db.VarChar(150)
+  token      String
+  created_at DateTime? @db.Timestamp(0)
+
+  @@index([email], map: "password_resets_email_index")
+  @@ignore
+}
+
+model permission_profile {
+  id            Int         @id @default(autoincrement()) @db.UnsignedInt
+  permission_id Int         @db.UnsignedInt
+  profile_id    Int         @db.UnsignedInt
+  permissions   permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "permission_profile_permission_id_foreign")
+  profiles      profiles    @relation(fields: [profile_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "permission_profile_profile_id_foreign")
+
+  @@index([permission_id], map: "permission_profile_permission_id_foreign")
+  @@index([profile_id], map: "permission_profile_profile_id_foreign")
+}
+
+model permissions {
+  id                 Int                  @id @default(autoincrement()) @db.UnsignedInt
+  name               String               @unique(map: "permissions_name_unique") @db.VarChar(60)
+  label              String               @db.VarChar(200)
+  created_at         DateTime?            @db.Timestamp(0)
+  updated_at         DateTime?            @db.Timestamp(0)
+  permission_profile permission_profile[]
+}
+
+model plans {
+  id               Int              @id @default(autoincrement()) @db.UnsignedInt
+  name             String           @unique(map: "plans_name_unique") @db.VarChar(100)
+  description      String
+  recommended      Boolean          @default(false)
+  time_access      Int
+  recurrence       plans_recurrence
+  price            Float
+  total_plots      Int
+  plot_price       Float
+  visible          Boolean          @default(true)
+  text_percent_off String?
+  identify_gateway String?
+  trial_days       Int              @default(0)
+  charges          Int?
+  created_at       DateTime?        @db.Timestamp(0)
+  updated_at       DateTime?        @db.Timestamp(0)
+  sales            sales[]
+}
+
+model profile_user {
+  id                                   Int   @id @default(autoincrement()) @db.UnsignedInt
+  profile_id                           Int   @db.UnsignedInt
+  user_id                              Int   @db.UnsignedInt
+  users_profile_user_profile_idTousers users @relation("profile_user_profile_idTousers", fields: [profile_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "profile_user_profile_id_foreign")
+  users_profile_user_user_idTousers    users @relation("profile_user_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "profile_user_user_id_foreign")
+
+  @@index([profile_id], map: "profile_user_profile_id_foreign")
+  @@index([user_id], map: "profile_user_user_id_foreign")
+}
+
+model profiles {
+  id                 Int                  @id @default(autoincrement()) @db.UnsignedInt
+  name               String               @unique(map: "profiles_name_unique") @db.VarChar(60)
+  label              String               @db.VarChar(200)
+  created_at         DateTime?            @db.Timestamp(0)
+  updated_at         DateTime?            @db.Timestamp(0)
+  permission_profile permission_profile[]
+}
+
+model replies_support {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id    Int       @db.UnsignedInt
+  support_id Int       @db.UnsignedInt
+  text       String    @db.Text
+  date       DateTime  @db.Date
+  visible    Boolean   @default(true)
+  likes      Int?
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  supports   supports  @relation(fields: [support_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "replies_support_support_id_foreign")
+  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "replies_support_user_id_foreign")
+
+  @@index([support_id], map: "replies_support_support_id_foreign")
+  @@index([user_id], map: "replies_support_user_id_foreign")
+}
+
+model sales {
+  id                     Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id                Int       @db.UnsignedInt
+  plan_id                Int       @db.UnsignedInt
+  date                   DateTime  @db.Date
+  old_status             String?
+  status                 String
+  fingerprint            String?
+  subscription_at        DateTime? @db.Date
+  expires_at             DateTime? @db.Date
+  subscription_id        String?   @db.VarChar(255)
+  subscription_active    Boolean   @default(true)
+  subscription_suspended Boolean   @default(false)
+  subscription_method    String?
+  url_billet             String?
+  plans                  plans     @relation(fields: [plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "sales_plan_id_foreign")
+  users                  users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "sales_user_id_foreign")
+
+  @@index([plan_id], map: "sales_plan_id_foreign")
+  @@index([user_id], map: "sales_user_id_foreign")
+}
+
+model specialization_course {
+  id                Int             @id @default(autoincrement()) @db.UnsignedInt
+  specialization_id Int             @db.UnsignedInt
+  course_id         Int             @db.UnsignedInt
+  position          Int
+  courses           courses         @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "specialization_course_course_id_foreign")
+  specializations   specializations @relation(fields: [specialization_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "specialization_course_specialization_id_foreign")
+
+  @@index([course_id], map: "specialization_course_course_id_foreign")
+  @@index([specialization_id], map: "specialization_course_specialization_id_foreign")
+}
+
+model specializations {
+  id                    Int                     @id @default(autoincrement()) @db.UnsignedInt
+  name                  String                  @unique(map: "specializations_name_unique") @db.VarChar(100)
+  url                   String                  @unique(map: "specializations_url_unique") @db.VarChar(100)
+  description           String                  @db.Text
+  date                  DateTime                @db.Date
+  color                 String
+  video                 String?                 @db.VarChar(200)
+  image                 String?                 @db.VarChar(200)
+  img_social            String?                 @db.VarChar(200)
+  deleted_at            DateTime?               @db.Timestamp(0)
+  created_at            DateTime?               @db.Timestamp(0)
+  updated_at            DateTime?               @db.Timestamp(0)
+  specialization_course specialization_course[]
+}
+
+model supports {
+  id                     Int               @id @default(autoincrement()) @db.UnsignedInt
+  user_id                Int               @db.UnsignedInt
+  supportable_id         Int               @db.UnsignedInt
+  supportable_type       String
+  subject                String            @db.VarChar(200)
+  url                    String            @unique(map: "supports_url_unique") @db.VarChar(80)
+  text                   String            @db.Text
+  date                   DateTime          @db.Date
+  date_last_modification DateTime?         @db.Date
+  visible                Boolean           @default(true)
+  status                 supports_status   @default(P)
+  likes                  Int?
+  owner_unread           Boolean           @default(false)
+  manager_unread         Boolean           @default(false)
+  created_at             DateTime?         @db.Timestamp(0)
+  updated_at             DateTime?         @db.Timestamp(0)
+  users                  users             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "supports_user_id_foreign")
+  replies_support        replies_support[]
+
+  @@index([supportable_id, supportable_type], map: "supports_supportable_id_supportable_type_index")
+  @@index([user_id], map: "supports_user_id_foreign")
+}
+
+model users {
+  id                                          Int                 @id @default(autoincrement()) @db.UnsignedInt
+  name                                        String
+  url                                         String              @unique(map: "users_url_unique") @db.VarChar(40)
+  email                                       String              @unique(map: "users_email_unique") @db.VarChar(150)
+  password                                    String
+  image                                       String?             @db.VarChar(100)
+  bibliography                                String?             @db.Text
+  facebook                                    String?             @unique(map: "users_facebook_unique") @db.VarChar(30)
+  twitter                                     String?             @unique(map: "users_twitter_unique") @db.VarChar(30)
+  instagran                                   String?             @unique(map: "users_instagran_unique") @db.VarChar(30)
+  linkedin                                    String?             @unique(map: "users_linkedin_unique") @db.VarChar(100)
+  google_plus                                 String?             @unique(map: "users_google_plus_unique") @db.VarChar(100)
+  snapchat                                    String?             @unique(map: "users_snapchat_unique") @db.VarChar(100)
+  github                                      String?             @unique(map: "users_github_unique") @db.VarChar(100)
+  status                                      users_status        @default(A)
+  blocked                                     Boolean             @default(false)
+  type                                        users_type          @default(U)
+  token_activation                            String?
+  token_access                                String?             @db.VarChar(255)
+  subscription                                DateTime?           @db.Date
+  expires_at                                  DateTime?           @db.Date
+  subscription_id                             String?             @db.VarChar(255)
+  subscription_plan                           Int?
+  subscription_active                         Boolean             @default(false)
+  subscription_suspended                      Boolean             @default(false)
+  remember_token                              String?             @db.VarChar(100)
+  deleted_at                                  DateTime?           @db.Timestamp(0)
+  created_at                                  DateTime?           @db.Timestamp(0)
+  updated_at                                  DateTime?           @db.Timestamp(0)
+  accesses                                    accesses[]
+  certificates                                certificates[]
+  course_evaluation                           course_evaluation[]
+  courses                                     courses[]
+  enrollment                                  enrollment[]
+  profile_user_profile_user_profile_idTousers profile_user[]      @relation("profile_user_profile_idTousers")
+  profile_user_profile_user_user_idTousers    profile_user[]      @relation("profile_user_user_idTousers")
+  replies_support                             replies_support[]
+  sales                                       sales[]
+  supports                                    supports[]
+  views                                       views[]
+}
+
+model views {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  lesson_id Int       @db.UnsignedInt
+  user_id   Int       @db.UnsignedInt
+  qty       Int       @default(1)
+  date      DateTime? @db.Date
+  ip        String?   @db.VarChar(45)
+  lessons   lessons   @relation(fields: [lesson_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "views_lesson_id_foreign")
+  users     users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "views_user_id_foreign")
+
+  @@index([lesson_id], map: "views_lesson_id_foreign")
+  @@index([user_id], map: "views_user_id_foreign")
+}
+
+enum enrollment_status {
+  started
+  approved
+  canceled
+  pending_analysis
+  billet_printed
+  refunded
+  dispute
+  completed
+  blocked
+  chargeback
+  delayed
+  expired
+}
+
+enum plans_recurrence {
+  monthly
+  quarterly
+  yearly
+}
+
+enum courses_origin {
+  vimeo
+  youtube
+  video
+}
+
+enum lessons_origin {
+  vimeo
+  youtube
+  video
+}
+
+enum supports_status {
+  P
+  W
+  F
+  C
+}
+
+enum courses_level {
+  beginner
+  intermediary
+  hard
+  specialist
+}
+
+enum courses_status {
+  scheduled
+  progressing
+  paused
+  finalized
+}
+
+enum users_status {
+  A
+  I
+}
+
+enum users_type {
+  U
+  T
+  M
+}
