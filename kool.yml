@@ -11,3 +11,4 @@ scripts:
     - kool start
   nest: kool exec app nest
   yarn: kool exec app yarn
+  npx: kool exec app npx
