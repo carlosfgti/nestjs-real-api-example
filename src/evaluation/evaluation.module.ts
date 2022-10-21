@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { EvaluationController } from './controller/evaluation.controller';
-import { evaluationProviders } from './evaluation.provider';
-import { EvaluationService } from './service/evaluation.service';
+import { EvaluationService } from './evaluation.service';
+import { EvaluationController } from './evaluation.controller';
 
 @Module({
   controllers: [EvaluationController],
-  providers: [...evaluationProviders, EvaluationService],
+  providers: [EvaluationService]
 })
 export class EvaluationModule {}
