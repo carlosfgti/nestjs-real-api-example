@@ -13,7 +13,7 @@ export class EvaluationService {
 
   findAll() {
     return this.prisma.course_evaluation.findMany({
-      include: { courses: true, users: true },
+      include: { courses: true },
     });
   }
 
