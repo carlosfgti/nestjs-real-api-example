@@ -33,7 +33,10 @@ export class EvaluationController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEvaluationDto: UpdateEvaluationDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateEvaluationDto: UpdateEvaluationDto,
+  ) {
     return this.evaluationService.update(+id, updateEvaluationDto);
   }
 
