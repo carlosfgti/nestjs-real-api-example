@@ -10,6 +10,6 @@ export class CoursesService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} course`;
+    return this.prisma.courses.findUnique({ where: { id } });
   }
 }
